@@ -62,12 +62,12 @@ namespace Facebook.Unity
 
         /// <summary>
         /// Gets or sets the graph API version.
-        /// The Unity sdk is by default pegged to the lastest version of the graph api
+        /// The Unity sdk is by default pegged to the latest version of the graph api
         /// at the time of the SDKs release. To override this value to use a different
         /// version set this value.
         /// <remarks>
         /// This value is only valid for direct api calls made through FB.Api and the
-        /// graph api version used by the javscript sdk when running on the web. The
+        /// graph api version used by the JavaScript SDK when running on the web. The
         /// underlyting Android and iOS SDKs will still be pegged to the graph api
         /// version of this release.
         /// </remarks>

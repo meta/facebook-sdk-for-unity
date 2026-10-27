@@ -146,10 +146,10 @@ The release has been deprecated due to Unity support issues caused by removing â
     - Subscriptions payments methods
 
 ### Fixed
-- Payments price convertion to double
+- Payments price conversion to double
 - Improved mobile orientation enum for Unity example
 - Improved mobile Tournaments example
-- Changed folder structure for External Dependecy Manager dlls
+- Changed folder structure for External Dependency Manager dlls
 
 ### Changed
 - Bumped SDK to 16.0.0

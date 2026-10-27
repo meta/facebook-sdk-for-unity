@@ -39,7 +39,7 @@ We are able to accept contributions to the Facebook SDK for Unity. To contribute
 - Follow the instructions in the [CONTRIBUTING.mdown](https://github.com/facebook/facebook-sdk-for-unity/blob/master/CONTRIBUTING.mdown).
 - Submit your pull request to the [dev](https://github.com/facebook/facebook-sdk-for-unity/tree/dev) branch. This allows us to merge your change into our internal master and then push out the change in the next release.
 
-SETUP DEVELOPMENT ENVIRONTMENT IN MAC
+SETUP DEVELOPMENT ENVIRONMENT IN MAC
 -------------
 Since Unity decided to change the way in which each of the versions was installed in the Mac file system, Unity Hub, and also due to changes in the distribution of implementations in the DLL from version 2019, it is necessary to solve the dependencies references in the project depending on the installed version.
 -For this, this process has been automated through a script ./configure.sh that is in the root of the project. You should run this script before opening the Facebook.sln project.
