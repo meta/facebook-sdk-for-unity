@@ -554,21 +554,24 @@ namespace Facebook.Unity.Editor
 
         private static void CreateDefaultAndroidManifest(string outputFile)
         {
-            var inputFile = Path.Combine(
-                EditorApplication.applicationContentsPath,
-                "PlaybackEngines/androidplayer/AndroidManifest.xml");
-            if (!File.Exists(inputFile))
+            string[] possiblePaths =
             {
-                // Unity moved this file. Try to get it at its new location
-                inputFile = Path.Combine(
-                    EditorApplication.applicationContentsPath,
-                    "PlaybackEngines/AndroidPlayer/Apk/AndroidManifest.xml");
-            }
+                // 2019.3+
+                "PlaybackEngines/AndroidPlayer/Apk/UnityManifest.xml"
+                // 2018.3 - 2019.2
+                "PlaybackEngines/AndroidPlayer/Apk/AndroidManifest.xml",
+                // 2017.2 - 2018.2
+                "PlaybackEngines/androidplayer/AndroidManifest.xml",
+            };
 
-            if (File.Exists(inputFile))
+            foreach (var relativePath in possiblePaths)
             {
-                File.Copy(inputFile, outputFile);
-                return;
+                var fullPath = Path.Combine(EditorApplication.applicationContentsPath, relativePath);
+                if (File.Exists(fullPath))
+                {
+                    File.Copy(fullPath, outputFile);
+                    return;
+                }
             }
 
             // On Unity 5.3+ we don't have default manifest so use our own
