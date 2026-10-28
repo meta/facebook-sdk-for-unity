@@ -36,6 +36,8 @@ namespace Facebook.Unity.Mobile.Android
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (mode != LoadSceneMode.Single)
+                return;
             CodelessIAPAutoLog.addListenerToIAPButtons(this);
         }
 
