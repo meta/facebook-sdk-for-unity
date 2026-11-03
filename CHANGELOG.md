@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unity 6 support on Android.
 
 ### Changed
+- **Breaking (iOS editor scripts):** `Facebook.Unity.Editor.iOS.Xcode` was
+  removed; use `UnityEditor.iOS.Xcode` and replace
+  `TargetGuidByName("Unity-iPhone")` with `GetUnityMainTargetGuid()` for the app
+  target or `GetUnityFrameworkTargetGuid()` for the `UnityFramework` target.
 - Bumped the Android External Dependency Manager to `1.2.188` — required for
   the Unity 6 Android support above.
     - Upgrading an existing project requires deleting
