@@ -22,8 +22,11 @@ namespace Facebook.Unity.Editor
 {
     using UnityEditor;
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
-    public class FacebookImporter : AssetPostprocessor
+    public partial class FacebookImporter : AssetPostprocessor
     {
         private enum WindowsArchitecture
         {
@@ -32,6 +35,9 @@ namespace Facebook.Unity.Editor
             both
         }
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string currentAsset = "";
 
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)

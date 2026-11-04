@@ -33,6 +33,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="CodelessCrawlerTests.cs" />
     <Compile Include="FacebookTestClass.cs" />
     <Compile Include="ProductImprovement.cs" />
     <Compile Include="BuildPostProcess\ProductImprovementSettingsTest.cs" />

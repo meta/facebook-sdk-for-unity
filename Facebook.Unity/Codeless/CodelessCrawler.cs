@@ -27,23 +27,49 @@ using System;
 using System.Text;
 using UnityEngine.SceneManagement;
 using System.Runtime.InteropServices;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+using Unity.Scripting.LifecycleManagement;
+#endif
 
 namespace Facebook.Unity
 {
-    public class CodelessCrawler : MonoBehaviour
+    public partial class CodelessCrawler : MonoBehaviour
     {
 #if UNITY_IOS
         [DllImport ("__Internal")]
         private static extern void IOSFBSendViewHierarchy (string tree);
 #endif
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static bool isGeneratingSnapshot = false;
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static Camera mainCamera = null;
 
-        public void Awake()
+#if UNITY_2019_3_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif
+        private static void ResetStaticState()
         {
+            isGeneratingSnapshot = false;
+            mainCamera = null;
+        }
+
+        public void OnEnable()
+        {
+            SceneManager.activeSceneChanged -= onActiveSceneChanged;
             SceneManager.activeSceneChanged += onActiveSceneChanged;
+        }
+
+        public void OnDisable()
+        {
+            SceneManager.activeSceneChanged -= onActiveSceneChanged;
         }
 
         public void CaptureViewHierarchy(string message)
@@ -58,11 +84,29 @@ namespace Facebook.Unity
         private IEnumerator GenSnapshot()
         {
             yield return (new WaitForEndOfFrame());
+
+            GenerateSnapshot(GenerateAndSendSnapshot);
+        }
+
+        internal static void GenerateSnapshot(Action generateSnapshot)
+        {
             if (isGeneratingSnapshot)
             {
-                yield break;
+                return;
             }
             isGeneratingSnapshot = true;
+            try
+            {
+                generateSnapshot();
+            }
+            finally
+            {
+                isGeneratingSnapshot = false;
+            }
+        }
+
+        private static void GenerateAndSendSnapshot()
+        {
             StringBuilder masterBuilder = new StringBuilder();
             masterBuilder.AppendFormat(
                 @"{{""screenshot"":""{0}"",",
@@ -88,7 +132,6 @@ namespace Facebook.Unity
                 default:
                     break;
             }
-            isGeneratingSnapshot = false;
         }
 
         private static void SendAndroid(string json)

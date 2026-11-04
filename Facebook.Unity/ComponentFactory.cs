@@ -21,11 +21,17 @@
 namespace Facebook.Unity
 {
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     internal class ComponentFactory
     {
         public const string GameObjectName = "UnityFacebookSDKPlugin";
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static GameObject facebookGameObject;
 
         internal enum IfNotExist

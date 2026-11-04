@@ -31,34 +31,75 @@ namespace Facebook.Unity
     using Facebook.Unity.Mobile.IOS;
     using Facebook.Unity.Settings;
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     /// <summary>
     /// Static class for exposing the facebook integration.
     /// </summary>
-    public sealed class FB : ScriptableObject
+    public sealed partial class FB : ScriptableObject
     {
         private const string DefaultJSSDKLocale = "en_US";
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static IFacebook facebook;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static bool isInitCalled = false;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string facebookDomain = "facebook.com";
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string gamingDomain = "fb.gg";
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string graphApiVersion = Constants.GraphApiVersion;
 
         private delegate void OnDLLLoaded();
+
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
+        private static string appId;
+
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
+        private static string clientToken;
+
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
+        private static OnDLLLoaded onDLLLoadedDelegate;
 
         /// <summary>
         /// Gets the app identifier. AppId might be different from FBSettings.AppId
         /// if using the programmatic version of FB.Init().
         /// </summary>
         /// <value>The app identifier.</value>
-        public static string AppId { get; private set; }
+        public static string AppId
+        {
+            get { return appId; }
+            private set { appId = value; }
+        }
 
         /// <summary>
         /// Gets the app client token. ClientToken might be different from FBSettings.ClientToken
         /// if using the programmatic version of FB.Init().
         /// </summary>
         /// <value>The app client token.</value>
-        public static string ClientToken { get; private set; }
+        public static string ClientToken
+        {
+            get { return clientToken; }
+            private set { clientToken = value; }
+        }
 
         /// <summary>
         /// Gets or sets the graph API version.
@@ -174,7 +215,28 @@ namespace Facebook.Unity
             }
         }
 
-        private static OnDLLLoaded OnDLLLoadedDelegate { get; set; }
+        private static OnDLLLoaded OnDLLLoadedDelegate
+        {
+            get { return onDLLLoadedDelegate; }
+            set { onDLLLoadedDelegate = value; }
+        }
+
+#if UNITY_2019_3_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif
+        private static void ResetStaticState()
+        {
+            facebook = null;
+            isInitCalled = false;
+            facebookDomain = "facebook.com";
+            gamingDomain = "fb.gg";
+            graphApiVersion = Constants.GraphApiVersion;
+            AppId = null;
+            ClientToken = null;
+            OnDLLLoadedDelegate = null;
+        }
 
         /// <summary>
         /// This is the preferred way to call FB.Init(). It will take the facebook app id specified in your "Facebook"

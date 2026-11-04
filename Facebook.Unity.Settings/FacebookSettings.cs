@@ -22,11 +22,14 @@ namespace Facebook.Unity.Settings
 {
     using System.Collections.Generic;
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     /// <summary>
     /// Facebook settings.
     /// </summary>
-    public class FacebookSettings : ScriptableObject
+    public partial class FacebookSettings : ScriptableObject
     {
 
 
@@ -54,8 +57,27 @@ namespace Facebook.Unity.Settings
             none,
         }
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static List<OnChangeCallback> onChangeCallbacks = new List<OnChangeCallback>();
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static FacebookSettings instance;
+
+        private static List<OnChangeCallback> OnChangeCallbacks
+        {
+            get
+            {
+                if (onChangeCallbacks == null)
+                {
+                    onChangeCallbacks = new List<OnChangeCallback>();
+                }
+
+                return onChangeCallbacks;
+            }
+        }
 
         [SerializeField]
         private int selectedAppIndex = 0;
@@ -561,17 +583,17 @@ namespace Facebook.Unity.Settings
 
         public static void RegisterChangeEventCallback(OnChangeCallback callback)
         {
-            onChangeCallbacks.Add(callback);
+            OnChangeCallbacks.Add(callback);
         }
 
         public static void UnregisterChangeEventCallback(OnChangeCallback callback)
         {
-            onChangeCallbacks.Remove(callback);
+            OnChangeCallbacks.Remove(callback);
         }
 
         private static void SettingsChanged()
         {
-            onChangeCallbacks.ForEach(callback => callback());
+            OnChangeCallbacks.ForEach(callback => callback());
         }
 
         /// <summary>

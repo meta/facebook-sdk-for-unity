@@ -70,9 +70,17 @@ namespace Facebook.Unity.Editor
 
         private GUIContent sdkVersion = new GUIContent("SDK Version [?]", "This Unity Facebook SDK version.  If you have problems or compliments please include this so we know exactly what version to look out for.");
 
-        public FacebookSettingsEditor()
+        private void OnEnable()
         {
+            FacebookSettings.UnregisterChangeEventCallback(this.SettingsChanged);
             FacebookSettings.RegisterChangeEventCallback(this.SettingsChanged);
+            this.showAndroidUtils = EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android;
+            this.showIOSSettings = EditorUserBuildSettings.activeBuildTarget.ToString() == "iOS";
+        }
+
+        private void OnDisable()
+        {
+            FacebookSettings.UnregisterChangeEventCallback(this.SettingsChanged);
         }
 
         [MenuItem("Facebook/Edit Settings")]
@@ -130,13 +138,6 @@ namespace Facebook.Unity.Editor
             string url = "https://developers.facebook.com/bugs";
             Application.OpenURL(url);
         }
-
-        void OnEnable()
-        {
-            this.showAndroidUtils = EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android;
-            this.showIOSSettings = EditorUserBuildSettings.activeBuildTarget.ToString() == "iOS";
-        }
-
 
         public override void OnInspectorGUI()
         {

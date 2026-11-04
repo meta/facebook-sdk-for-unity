@@ -21,15 +21,27 @@
 namespace Facebook.Unity
 {
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     internal static class FacebookLogger
     {
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
+        private static IFacebookLogger instance;
+
         static FacebookLogger()
         {
             FacebookLogger.Instance = new DebugLogger();
         }
 
-        internal static IFacebookLogger Instance { private get; set; }
+        internal static IFacebookLogger Instance
+        {
+            private get { return instance; }
+            set { instance = value; }
+        }
 
         public static void Log(string msg)
         {

@@ -23,12 +23,21 @@ namespace Facebook.Unity
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     /// <summary>
     /// Contains the access token and related information.
     /// </summary>
-    public class AccessToken
+    public partial class AccessToken
     {
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
+        private static AccessToken currentAccessToken;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessToken"/> class.
         /// </summary>
@@ -77,7 +86,21 @@ namespace Facebook.Unity
         /// Gets the current access token.
         /// </summary>
         /// <value>The current access token.</value>
-        public static AccessToken CurrentAccessToken { get; internal set; }
+        public static AccessToken CurrentAccessToken
+        {
+            get { return currentAccessToken; }
+            internal set { currentAccessToken = value; }
+        }
+
+#if UNITY_2019_3_OR_NEWER
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif
+        private static void ResetStaticState()
+        {
+            CurrentAccessToken = null;
+        }
 
         /// <summary>
         /// Gets the token string.

@@ -26,6 +26,9 @@ namespace Facebook.MiniJSON
     using System.Globalization;
     using System.IO;
     using System.Text;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     // Example usage:
     //
@@ -69,6 +72,9 @@ namespace Facebook.MiniJSON
     public static class Json
     {
         // interpret all numbers as if they are english US formatted numbers
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static NumberFormatInfo numberFormat = (new CultureInfo("en-US")).NumberFormat;
 
         /// <summary>

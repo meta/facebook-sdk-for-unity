@@ -22,10 +22,19 @@ namespace Facebook.Unity
 {
     using System;
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
-    internal static class FBUnityUtility
+    internal static partial class FBUnityUtility
     {
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [AutoStaticsCleanup]
+#endif
         private static string currentDeviceIdentifier;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [AutoStaticsCleanup]
+#endif
         private static IAsyncRequestStringWrapper asyncRequestStringWrapper;
 
         public static string UnityDeviceIdentifier
