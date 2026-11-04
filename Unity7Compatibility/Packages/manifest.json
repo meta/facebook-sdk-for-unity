@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "com.unity.external-dependency-manager": "2.1.1",
+    "com.unity.project-auditor": "2.0.0",
+    "com.unity.project-auditor-rules": "3.0.0",
+    "com.unity.sdk.linux-x86_64": "1.1.0",
+    "com.unity.toolchain.linux-x86_64-linux": "1.1.0",
+    "com.unity.ugui": "7.0.0",
+    "com.unity.modules.androidjni": "1.0.0",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.ui": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0",
+    "com.unity.modules.unitywebrequestwww": "1.0.0"
+  }
+}
