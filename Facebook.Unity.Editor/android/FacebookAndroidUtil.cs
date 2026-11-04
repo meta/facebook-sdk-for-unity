@@ -21,6 +21,7 @@
 namespace Facebook.Unity.Editor
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
@@ -29,8 +30,11 @@ namespace Facebook.Unity.Editor
     using Google;
     using UnityEditor;
     using UnityEngine;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
-    public class FacebookAndroidUtil
+    public partial class FacebookAndroidUtil
     {
         public const string ErrorNoSDK = "no_android_sdk";
         public const string ErrorNoKeystore = "no_android_keystore";
@@ -38,7 +42,13 @@ namespace Facebook.Unity.Editor
         public const string ErrorNoOpenSSL = "no_openssl";
         public const string ErrorKeytoolError = "java_keytool_error";
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string debugKeyHash;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static string setupError;
 
         public static bool SetupProperly
@@ -131,18 +141,96 @@ namespace Facebook.Unity.Editor
                 }
                 catch (Exception)
                 {
-                    foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    // Do not return a stale EditorPrefs value when the embedded
+                    // SDK lookup failed.
+                    sdkPath = null;
+                    foreach (Assembly assembly in GetLoadedAssemblies())
                     {
                         if (assembly.GetName().Name == "UnityEditor.Android.Extensions")
                         {
-                            sdkPath = Path.GetDirectoryName(assembly.Location);
-                            break;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+                            var assemblyPath = assembly.GetLoadedAssemblyPath();
+#else
+                            var assemblyPath = assembly.Location;
+#endif
+                            if (string.IsNullOrEmpty(assemblyPath))
+                            {
+                                UnityEngine.Debug.LogWarning(
+                                    "UnityEditor.Android.Extensions did not expose a loaded assembly path");
+                                continue;
+                            }
+
+                            sdkPath = Path.GetDirectoryName(assemblyPath);
+                            if (!string.IsNullOrEmpty(sdkPath))
+                            {
+                                break;
+                            }
+
+                            UnityEngine.Debug.LogWarning(
+                                "Unable to derive the Android SDK directory from " + assemblyPath);
                         }
                     }
                 }
             }
 
             return sdkPath;
+        }
+
+        private static IEnumerable<Assembly> GetLoadedAssemblies()
+        {
+            var currentAssembliesType = typeof(UnityEngine.Object).Assembly.GetType(
+                "UnityEngine.Assemblies.CurrentAssemblies",
+                false);
+            var getLoadedAssemblies = currentAssembliesType == null
+                ? null
+                : currentAssembliesType.GetMethod(
+                    "GetLoadedAssemblies",
+                    BindingFlags.Public | BindingFlags.Static);
+            if (getLoadedAssemblies != null)
+            {
+                try
+                {
+                    var loadedAssemblies = getLoadedAssemblies.Invoke(null, null) as IEnumerable<Assembly>;
+                    if (loadedAssemblies != null)
+                    {
+                        return loadedAssemblies;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        "Unable to enumerate loaded assemblies through CurrentAssemblies: " +
+                        exception.Message);
+                }
+            }
+
+            var getAssemblies = typeof(AppDomain).GetMethod(
+                "GetAssemblies",
+                BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<Assembly> appDomainAssemblies = null;
+            if (getAssemblies != null)
+            {
+                try
+                {
+                    appDomainAssemblies = getAssemblies.Invoke(
+                        AppDomain.CurrentDomain,
+                        null) as IEnumerable<Assembly>;
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        "Unable to enumerate loaded assemblies through AppDomain: " +
+                        exception.Message);
+                }
+            }
+
+            if (appDomainAssemblies == null)
+            {
+                UnityEngine.Debug.LogWarning("Unable to enumerate loaded assemblies on this Unity runtime");
+                return new Assembly[0];
+            }
+
+            return appDomainAssemblies;
         }
 
         private static string GetKeyHash(string alias, string keyStore, string password)

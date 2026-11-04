@@ -28,8 +28,8 @@ namespace Facebook.Unity.Editor
 
     public static class Utility
     {
-        private static string BundleIdentifier = "bundleIdentifier";
-        private static string ApplicationIdentifier = "applicationIdentifier";
+        private const string BundleIdentifier = "bundleIdentifier";
+        private const string ApplicationIdentifier = "applicationIdentifier";
 
         public static T Pop<T>(this IList<T> list)
         {

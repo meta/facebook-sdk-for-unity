@@ -109,19 +109,74 @@ namespace Facebook.Unity
 
         private static System.Type FindTypeInAssemblies(string typeName, string nameSpace)
         {
-            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
+            var assemblies = GetLoadedAssemblies();
+            var fullTypeName = nameSpace + "." + typeName;
+            foreach (var assembly in assemblies)
             {
-                var types = assemblies[i].GetTypes();
-                for (int n = 0; n < types.Length; n++)
+                var type = assembly.GetType(fullTypeName, false);
+                if (type != null)
                 {
-                    if (typeName == types[n].Name && nameSpace == types[n].Namespace)
-                    {
-                        return types[n];
-                    }
+                    return type;
                 }
             }
             return null;
+        }
+
+        private static IEnumerable<Assembly> GetLoadedAssemblies()
+        {
+            var currentAssembliesType = typeof(UnityEngine.Object).Assembly.GetType(
+                "UnityEngine.Assemblies.CurrentAssemblies",
+                false);
+            var getLoadedAssemblies = currentAssembliesType == null
+                ? null
+                : currentAssembliesType.GetMethod(
+                    "GetLoadedAssemblies",
+                    BindingFlags.Public | BindingFlags.Static);
+            if (getLoadedAssemblies != null)
+            {
+                try
+                {
+                    var loadedAssemblies = getLoadedAssemblies.Invoke(null, null) as IEnumerable<Assembly>;
+                    if (loadedAssemblies != null)
+                    {
+                        return loadedAssemblies;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    FacebookLogger.Warn(
+                        "Unable to enumerate loaded assemblies through CurrentAssemblies: " +
+                        exception.Message);
+                }
+            }
+
+            var getAssemblies = typeof(AppDomain).GetMethod(
+                "GetAssemblies",
+                BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<Assembly> appDomainAssemblies = null;
+            if (getAssemblies != null)
+            {
+                try
+                {
+                    appDomainAssemblies = getAssemblies.Invoke(
+                        AppDomain.CurrentDomain,
+                        null) as IEnumerable<Assembly>;
+                }
+                catch (Exception exception)
+                {
+                    FacebookLogger.Warn(
+                        "Unable to enumerate loaded assemblies through AppDomain: " +
+                        exception.Message);
+                }
+            }
+
+            if (appDomainAssemblies == null)
+            {
+                FacebookLogger.Warn("Unable to enumerate loaded assemblies on this Unity runtime");
+                return new Assembly[0];
+            }
+
+            return appDomainAssemblies;
         }
 
         private static UnityEngine.Object[] FindObjectsOfTypeByName(string typeName, string nameSpace)
@@ -133,7 +188,13 @@ namespace Facebook.Unity
             {
                 return null;
             }
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+            return UnityEngine.Object.FindObjectsByType(type);
+#elif UNITY_2023_1_OR_NEWER
+            return UnityEngine.Object.FindObjectsByType(type, FindObjectsSortMode.None);
+#else
             return UnityEngine.Object.FindObjectsOfType(type);
+#endif
         }
 
         private static object GetField(object inObj, string fieldName)

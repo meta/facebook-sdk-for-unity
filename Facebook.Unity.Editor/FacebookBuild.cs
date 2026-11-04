@@ -95,10 +95,19 @@ namespace Facebook.Unity.Editor
                 fileList.AddRange(Directory.GetFiles(IAPiOSPath, "*.*", SearchOption.AllDirectories));
 
                 // No IncludeDependencies: the list is already recursive, and the walk adds uGUI.
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+                UnityEditor.AssetPackage.Package.Export(
+                    new UnityEditor.AssetPackage.ExportPackageParameters(
+                        fileList.ToArray(),
+                        path,
+                        null,
+                        ExportPackageOptions.Recurse));
+#else
                 AssetDatabase.ExportPackage(
                     fileList.ToArray(),
                     path,
                     ExportPackageOptions.Recurse);
+#endif
             }
             finally
             {

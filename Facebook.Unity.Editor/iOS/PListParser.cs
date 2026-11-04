@@ -26,8 +26,11 @@ namespace Facebook.Unity.Editor
     using System.Xml;
     using System.Xml.Linq;
     using Facebook.Unity.Settings;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
-    internal class PListParser
+    internal partial class PListParser
     {
         private const string LSApplicationQueriesSchemesKey = "LSApplicationQueriesSchemes";
         private const string CFBundleURLTypesKey = "CFBundleURLTypes";
@@ -46,6 +49,9 @@ namespace Facebook.Unity.Editor
         private const string AutoLogMetaDataEnabled = "FBSDKAutoLogMetaDataEnabled";
         private const string AdvertiserIDCollectionEnabled = "FacebookAdvertiserIDCollectionEnabled";
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static readonly IList<object> FacebookLSApplicationQueriesSchemes = new List<object>()
         {
             "fbapi",
@@ -54,6 +60,9 @@ namespace Facebook.Unity.Editor
             "fbshareextension"
         };
 
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static readonly PListDict FacebookUrlSchemes = new PListDict()
         {
             { PListParser.CFBundleURLName, PListParser.FacebookCFBundleURLName },
@@ -65,7 +74,11 @@ namespace Facebook.Unity.Editor
         {
             this.filePath = fullPath;
             XmlReaderSettings settings = new XmlReaderSettings();
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+            settings.DtdProcessing = DtdProcessing.Parse;
+#else
             settings.ProhibitDtd = false;
+#endif
             XmlReader plistReader = XmlReader.Create(this.filePath, settings);
 
             XDocument doc = XDocument.Load(plistReader);
