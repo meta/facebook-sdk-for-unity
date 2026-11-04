@@ -279,7 +279,12 @@ namespace Facebook.Unity.Editor
 
         public override void CurrentProfile(FacebookDelegate<IProfileResult> callback)
         {
-            throw new NotSupportedException();
+            var result = new Dictionary<string, object>()
+            {
+                { Constants.ErrorKey, "No current profile is available in the Unity Editor" },
+                { Constants.CallbackIdKey, this.CallbackManager.AddFacebookDelegate(callback) },
+            };
+            this.OnCurrentProfileComplete(new ResultContainer(result));
         }
 
         public void FetchDeferredAppLink(
@@ -420,9 +425,27 @@ namespace Facebook.Unity.Editor
             this.OnAuthResponse(result);
         }
 
+        public void OnCurrentProfileComplete(ResultContainer resultContainer)
+        {
+            var result = new ProfileResult(resultContainer);
+            CallbackManager.OnFacebookResponse(result);
+        }
+
         public void OnFriendFinderComplete(ResultContainer resultContainer)
         {
             var result = new GamingServicesFriendFinderResult(resultContainer);
+            CallbackManager.OnFacebookResponse(result);
+        }
+
+        public void OnFriendFinderInvitationsComplete(ResultContainer resultContainer)
+        {
+            var result = new FriendFinderInvitationResult(resultContainer);
+            CallbackManager.OnFacebookResponse(result);
+        }
+
+        public void OnGetUserLocaleComplete(ResultContainer resultContainer)
+        {
+            var result = new LocaleResult(resultContainer);
             CallbackManager.OnFacebookResponse(result);
         }
 
@@ -641,12 +664,18 @@ namespace Facebook.Unity.Editor
 
         public override void GetFriendFinderInvitations(FacebookDelegate<IFriendFinderInvitationResult> callback)
         {
-            throw new NotImplementedException();
+            var result = new Dictionary<string, object>();
+            result[FriendFinderInvitationResult.InvitationsKey] = new List<FriendFinderInviation>();
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnFriendFinderInvitationsComplete(new ResultContainer(result));
         }
 
         public override void DeleteFriendFinderInvitation(string invitationId, FacebookDelegate<IFriendFinderInvitationResult> callback)
         {
-            throw new NotImplementedException();
+            var result = new Dictionary<string, object>();
+            result[FriendFinderInvitationResult.InvitationsKey] = new List<FriendFinderInviation>();
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnFriendFinderInvitationsComplete(new ResultContainer(result));
         }
 
         public override void UploadImageToMediaLibrary(
@@ -658,7 +687,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["id"] = "1232453";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
-            this.OnFetchDeferredAppLinkComplete(new ResultContainer(result));
+            this.OnUploadImageToMediaLibraryComplete(new ResultContainer(result));
         }
 
         public override void UploadVideoToMediaLibrary(
@@ -672,12 +701,15 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["video_id"] = "456789";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
-            this.OnFetchDeferredAppLinkComplete(new ResultContainer(result));
+            this.OnUploadVideoToMediaLibraryComplete(new ResultContainer(result));
         }
 
         public override void GetUserLocale(FacebookDelegate<ILocaleResult> callback)
         {
-            throw new NotImplementedException();
+            var result = new Dictionary<string, object>();
+            result["locale"] = "en_US";
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetUserLocaleComplete(new ResultContainer(result));
         }
 
         public void OnIAPReady(FacebookDelegate<IIAPReadyResult> callback)
@@ -685,6 +717,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnOnIAPReadyComplete(new ResultContainer(result));
         }
 
         public override void GetCatalog(FacebookDelegate<ICatalogResult> callback)
@@ -692,20 +725,23 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "[{\"productID\":\"123\",\"title\":\"item\",\"price\":\"$0.99\",\"priceAmount\":\"0.99\",\"priceCurrencyCode\":\"USD\"}]";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetCatalogComplete(new ResultContainer(result));
         }
 
         public override void GetPurchases(FacebookDelegate<IPurchasesResult> callback)
         {
             var result = new Dictionary<string, object>();
-            result["success"] = "[{\"isConsumed\":\"false\",\"paymentID\":\"2607915835989565\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":\"1583797821\":\"purchaseToken\":\"1655700687901784\",\"signedRequest\":\"abc123ZYZ\"}]";
+            result["success"] = "[{\"isConsumed\":true,\"paymentID\":\"2607915835989565\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":1583797821,\"purchaseToken\":\"1655700687901784\",\"signedRequest\":\"abc123ZYZ\"}]";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetPurchasesComplete(new ResultContainer(result));
         }
 
         public override void Purchase(string productID, FacebookDelegate<IPurchaseResult> callback, string developerPayload = "")
         {
             var result = new Dictionary<string, object>();
-            result["success"] = "{\"isConsumed\":\"false\",\"paymentID\":\"2607915835989565\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":\"1583797821\",\"purchaseToken\":\"1655700687901784\",\"signedRequest\":\"XZZ9xQDHOGulfhZMRVQ8UC-TadAqFrueYveAAqxock.eyJhbGdvcm10aG0iOiJITUFDLVNIQTI1Nilslm...\"}";
+            result["success"] = "{\"isConsumed\":true,\"paymentID\":\"2607915835989565\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":1583797821,\"purchaseToken\":\"1655700687901784\",\"signedRequest\":\"XZZ9xQDHOGulfhZMRVQ8UC-TadAqFrueYveAAqxock.eyJhbGdvcm10aG0iOiJITUFDLVNIQTI1Nilslm...\"}";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnPurchaseComplete(new ResultContainer(result));
         }
 
         public override void ConsumePurchase(string purchaseToken, FacebookDelegate<IConsumePurchaseResult> callback)
@@ -713,27 +749,31 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnConsumePurchaseComplete(new ResultContainer(result));
         }
 
         public override void GetSubscribableCatalog(FacebookDelegate<ISubscribableCatalogResult> callback)
         {
             var result = new Dictionary<string, object>();
-            result["success"] = "[{\"productID\":\"123\",\"title\":\"item\",\"price\":\"$0.99\",\"priceAmount\":\"0.99\",\"priceCurrencyCode\":\"USD\",\"subscriptionTerm\":\"MONTHLY\"}]";
+            result["success"] = "[{\"productID\":\"123\",\"title\":\"item\",\"price\":\"$0.99\",\"priceAmount\":0.99,\"priceCurrencyCode\":\"USD\",\"subscriptionTerm\":\"MONTHLY\"}]";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetSubscribableCatalogComplete(new ResultContainer(result));
         }
 
         public override void GetSubscriptions(FacebookDelegate<ISubscriptionsResult> callback)
         {
             var result = new Dictionary<string, object>();
-            result["success"] = "[{\"deactivationTime\":\"15887857836\",\"isEntitlementActive\":\"true\",\"periodStartTime\":\"1583797821\",\"periodStartTime\":\"1584516124\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":\"1583797821\":\"purchaseToken\":\"1655700687901784\",\"stats\":\"ACTIVE\",\"signedRequest\":\"abc123ZYZ\",\"subscriptionTerm\":\"MONTHLY\"}]";
+            result["success"] = "[{\"deactivationTime\":1588785783,\"isEntitlementActive\":true,\"periodStartTime\":1583797821,\"periodEndTime\":1584516124,\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchasePrice\":{\"amount\":\"0.99\",\"currency\":\"USD\"},\"purchaseTime\":1583797821,\"purchaseToken\":\"1655700687901784\",\"status\":\"ACTIVE\",\"signedRequest\":\"abc123ZYZ\",\"subscriptionTerm\":\"MONTHLY\"}]";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetSubscriptionsComplete(new ResultContainer(result));
         }
 
         public override void PurchaseSubscription(string productID, FacebookDelegate<ISubscriptionResult> callback)
         {
             var result = new Dictionary<string, object>();
-            result["success"] = "{\"deactivationTime\":\"15887857836\",\"isEntitlementActive\":\"true\",\"periodStartTime\":\"1583797821\",\"periodStartTime\":\"1584516124\",\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchaseTime\":\"1583797821\":\"purchaseToken\":\"1655700687901784\",\"stats\":\"ACTIVE\",\"signedRequest\":\"abc123ZYZ\",\"subscriptionTerm\":\"MONTHLY\"}";
+            result["success"] = "{\"deactivationTime\":1588785783,\"isEntitlementActive\":true,\"periodStartTime\":1583797821,\"periodEndTime\":1584516124,\"productID\":\"123\",\"purchasePlatform\":\"FB\",\"purchasePrice\":{\"amount\":\"0.99\",\"currency\":\"USD\"},\"purchaseTime\":1583797821,\"purchaseToken\":\"1655700687901784\",\"status\":\"ACTIVE\",\"signedRequest\":\"abc123ZYZ\",\"subscriptionTerm\":\"MONTHLY\"}";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnPurchaseSubscriptionComplete(new ResultContainer(result));
         }
 
         public override void CancelSubscription(string purchaseToken, FacebookDelegate<ICancelSubscriptionResult> callback)
@@ -741,6 +781,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnCancelSubscriptionComplete(new ResultContainer(result));
         }
 
         public void InitCloudGame(FacebookDelegate<IInitCloudGameResult> callback)
@@ -748,6 +789,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnInitCloudGameComplete(new ResultContainer(result));
         }
 
         public void GameLoadComplete(FacebookDelegate<IGameLoadCompleteResult> callback)
@@ -755,6 +797,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGameLoadCompleteComplete(new ResultContainer(result));
         }
 
         public override void ScheduleAppToUserNotification(
@@ -768,6 +811,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnScheduleAppToUserNotificationComplete(new ResultContainer(result));
         }
 
         public override void LoadInterstitialAd(string placementID, FacebookDelegate<IInterstitialAdResult> callback)
@@ -775,6 +819,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnLoadInterstitialAdComplete(new ResultContainer(result));
         }
 
         public override void ShowInterstitialAd(string placementID, FacebookDelegate<IInterstitialAdResult> callback)
@@ -782,6 +827,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnShowInterstitialAdComplete(new ResultContainer(result));
         }
 
         public override void LoadRewardedVideo(string placementID, FacebookDelegate<IRewardedVideoResult> callback)
@@ -789,6 +835,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnLoadRewardedVideoComplete(new ResultContainer(result));
         }
 
         public override void ShowRewardedVideo(string placementID, FacebookDelegate<IRewardedVideoResult> callback)
@@ -796,6 +843,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnShowRewardedVideoComplete(new ResultContainer(result));
         }
 
         public void GetPayload(FacebookDelegate<IPayloadResult> callback)
@@ -803,6 +851,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "{\"key\":\"test\",\"value\":\"123\"}";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetPayloadComplete(new ResultContainer(result));
         }
 
         public override void PostSessionScore(int score, FacebookDelegate<ISessionScoreResult> callback)
@@ -810,6 +859,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnPostSessionScoreComplete(new ResultContainer(result));
         }
 
         public override void PostTournamentScore(int score, FacebookDelegate<ITournamentScoreResult> callback)
@@ -817,16 +867,14 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnPostTournamentScoreComplete(new ResultContainer(result));
         }
 
         public override void GetTournament(FacebookDelegate<ITournamentResult> callback)
         {
-            var result = new Dictionary<string, object>();
-            result["tournamentId"] = "123";
-            result["contextId"] = "456";
-            result["endTime"] = "456";
-            result["data"] = new Dictionary<string, string>();
+            var result = CreateMockTournamentResult();
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetTournamentComplete(new ResultContainer(result));
         }
 
         public override void ShareTournament(int score, Dictionary<string, string> data, FacebookDelegate<ITournamentScoreResult> callback)
@@ -834,6 +882,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnShareTournamentComplete(new ResultContainer(result));
         }
 
         public override void CreateTournament(
@@ -845,27 +894,32 @@ namespace Facebook.Unity.Editor
             Dictionary<string, string> data,
             FacebookDelegate<ITournamentResult> callback)
         {
-            var result = new Dictionary<string, object>();
-            result["tournamentId"] = "123";
-            result["contextId"] = "456";
-            result["endTime"] = "456";
-            result["data"] = new Dictionary<string, string>();
+            var result = CreateMockTournamentResult();
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnCreateTournamentComplete(new ResultContainer(result));
         }
 
         public void GetTournaments(FacebookDelegate<IGetTournamentsResult> callback)
         {
-            throw new NotImplementedException();
+            var result = new Dictionary<string, object>();
+            result["0"] = CreateMockTournamentResult();
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetTournamentsComplete(new ResultContainer(result));
         }
 
         public void UpdateTournament(string tournamentID, int score, FacebookDelegate<ITournamentScoreResult> callback)
         {
-            throw new NotImplementedException();
+            var result = new Dictionary<string, object>();
+            result["success"] = "";
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnUpdateTournamentComplete(new ResultContainer(result));
         }
 
         public void UpdateAndShareTournament(string tournamentID, int score, FacebookDelegate<IDialogResult> callback)
         {
-            throw new NotImplementedException();
+            var result = CreateMockTournamentResult();
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnTournamentDialogSuccess(new ResultContainer(result));
         }
 
         public void CreateAndShareTournament(
@@ -877,7 +931,9 @@ namespace Facebook.Unity.Editor
             string payload,
             FacebookDelegate<IDialogResult> callback)
         {
-            throw new NotImplementedException();
+            var result = CreateMockTournamentResult();
+            result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnTournamentDialogSuccess(new ResultContainer(result));
         }
 
         public void OpenAppStore(FacebookDelegate<IOpenAppStoreResult> callback)
@@ -885,6 +941,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["success"] = "";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnOpenAppStoreComplete(new ResultContainer(result));
         }
 
         public void CreateGamingContext(string playerID, FacebookDelegate<ICreateGamingContextResult> callback)
@@ -892,6 +949,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["contextId"] = "1234";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnCreateGamingContextComplete(new ResultContainer(result));
         }
 
         public void SwitchGamingContext(string gamingContextID, FacebookDelegate<ISwitchGamingContextResult> callback)
@@ -899,6 +957,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["contextId"] = "1234";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnSwitchGamingContextComplete(new ResultContainer(result));
         }
 
         public void ChooseGamingContext(List<string> filters, int minSize, int maxSize, FacebookDelegate<IChooseGamingContextResult> callback)
@@ -906,6 +965,7 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["contextId"] = "1234";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnChooseGamingContextComplete(new ResultContainer(result));
         }
 
         public void GetCurrentGamingContext(FacebookDelegate<IGetCurrentGamingContextResult> callback)
@@ -913,6 +973,18 @@ namespace Facebook.Unity.Editor
             var result = new Dictionary<string, object>();
             result["contextId"] = "1234";
             result[Constants.CallbackIdKey] = this.CallbackManager.AddFacebookDelegate(callback);
+            this.OnGetCurrentGamingContextComplete(new ResultContainer(result));
+        }
+
+        private static Dictionary<string, object> CreateMockTournamentResult()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "tournament_id", "123" },
+                { "context_id", "456" },
+                { "end_time", 456 },
+                { "payload", new Dictionary<string, string>() },
+            };
         }
 
         #region Canvas Dummy Methods

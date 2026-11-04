@@ -90,6 +90,7 @@ namespace Facebook.Unity
             }
 
             this.DeveloperPayload = developerPayload;
+            this.IsConsumed = isConsumed;
             this.PaymentActionType = paymentActionType;
             this.PaymentID = paymentID;
             this.ProductID = productID;

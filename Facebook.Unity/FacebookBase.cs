@@ -322,9 +322,17 @@ namespace Facebook.Unity
 
         public abstract void UploadVideoToMediaLibrary(string caption, Uri videoUri, bool shouldLaunchMediaDialog, FacebookDelegate<IMediaUploadResult> callback);
 
-        public void UploadImageToMediaLibrary(string caption, Uri imageUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback) { }
+        // travelId is a Windows-only extension. Other implementations retain
+        // their normal upload behavior when callers use this overload.
+        public virtual void UploadImageToMediaLibrary(string caption, Uri imageUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
+        {
+            this.UploadImageToMediaLibrary(caption, imageUri, shouldLaunchMediaDialog, callback);
+        }
 
-        public void UploadVideoToMediaLibrary(string caption, Uri videoUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback) { }
+        public virtual void UploadVideoToMediaLibrary(string caption, Uri videoUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
+        {
+            this.UploadVideoToMediaLibrary(caption, videoUri, shouldLaunchMediaDialog, callback);
+        }
 
         public abstract void GetUserLocale(FacebookDelegate<ILocaleResult> callback);
     }

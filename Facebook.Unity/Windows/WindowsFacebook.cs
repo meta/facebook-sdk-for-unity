@@ -251,12 +251,12 @@ namespace Facebook.Unity.Windows
             this.windowsWrapper.CreateTournament(initialScore, title, imageBase64DataUrl, sortOrder, scoreFormat, data, this.CallbackManager.AddFacebookDelegate(callback), this.CallbackManager);
         }
 
-        public new void UploadImageToMediaLibrary(string caption, Uri imageUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
+        public override void UploadImageToMediaLibrary(string caption, Uri imageUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
         {
             this.windowsWrapper.UploadImageToMediaLibrary(caption, imageUri, shouldLaunchMediaDialog, travelId, this.CallbackManager.AddFacebookDelegate(callback), this.CallbackManager);
         }
 
-        public new void UploadVideoToMediaLibrary(string caption, Uri videoUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
+        public override void UploadVideoToMediaLibrary(string caption, Uri videoUri, bool shouldLaunchMediaDialog, string travelId, FacebookDelegate<IMediaUploadResult> callback)
         {
             this.windowsWrapper.UploadVideoToMediaLibrary(caption, videoUri, shouldLaunchMediaDialog, travelId, this.CallbackManager.AddFacebookDelegate(callback), this.CallbackManager);
         }

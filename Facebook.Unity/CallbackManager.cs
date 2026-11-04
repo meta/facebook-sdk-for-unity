@@ -92,6 +92,7 @@ namespace Facebook.Unity
                 CallbackManager.TryCallCallback<ISwitchGamingContextResult>(callback, result) ||
                 CallbackManager.TryCallCallback<IChooseGamingContextResult>(callback, result) ||
                 CallbackManager.TryCallCallback<IGetCurrentGamingContextResult>(callback, result) ||
+                CallbackManager.TryCallCallback<IOpenAppStoreResult>(callback, result) ||
                 CallbackManager.TryCallCallback<IPayResult>(callback, result) ||
                 CallbackManager.TryCallCallback<IAppLinkResult>(callback, result) ||
                 CallbackManager.TryCallCallback<ILoginResult>(callback, result) ||

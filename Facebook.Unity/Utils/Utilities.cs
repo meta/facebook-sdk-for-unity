@@ -25,10 +25,16 @@ namespace Facebook.Unity
     using System.Globalization;
     using System.Linq;
     using System.Text;
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+    using global::Unity.Scripting.LifecycleManagement;
+#endif
 
     internal static class Utilities
     {
         private const string WarningMissingParameter = "Did not find expected value '{0}' in dictionary";
+#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
+        [NoAutoStaticsCleanup]
+#endif
         private static Dictionary<string, string> commandLineArguments;
 
         public delegate void Callback<T>(T obj);
@@ -451,7 +457,11 @@ namespace Facebook.Unity
             subscription.TryGetValue(isWindows ? "period_start_time" : "periodStartTime", out periodStartTime);
 
             long periodEndTime;
-            subscription.TryGetValue(isWindows ? "period_end_time" : "period_end_time", out periodEndTime);
+            if (!subscription.TryGetValue(isWindows ? "period_end_time" : "periodEndTime", out periodEndTime) && !isWindows)
+            {
+                // Retain compatibility with payloads using the legacy non-Windows key.
+                subscription.TryGetValue("period_end_time", out periodEndTime);
+            }
 
             string productID = subscription[isWindows ? "product_id" : "productID"].ToStringNullOk();
 

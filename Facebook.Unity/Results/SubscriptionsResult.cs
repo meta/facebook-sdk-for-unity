@@ -27,7 +27,7 @@ namespace Facebook.Unity
     {
         public SubscriptionsResult(ResultContainer resultContainer) : base(resultContainer)
         {
-            if (this.Subscriptions != null && this.ResultDictionary.ContainsKey("success"))
+            if (this.ResultDictionary != null && this.ResultDictionary.ContainsKey("success"))
             {
                 this.Subscriptions = Utilities.ParseSubscriptionsFromResult(this.ResultDictionary);
             }
