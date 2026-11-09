@@ -279,12 +279,7 @@ namespace Facebook.Unity.Editor
 
         public override void CurrentProfile(FacebookDelegate<IProfileResult> callback)
         {
-            var result = new Dictionary<string, object>()
-            {
-                { Constants.ErrorKey, "No current profile is available in the Unity Editor" },
-                { Constants.CallbackIdKey, this.CallbackManager.AddFacebookDelegate(callback) },
-            };
-            this.OnCurrentProfileComplete(new ResultContainer(result));
+            throw new NotSupportedException();
         }
 
         public void FetchDeferredAppLink(
@@ -423,12 +418,6 @@ namespace Facebook.Unity.Editor
         {
             var result = new LoginResult(resultContainer);
             this.OnAuthResponse(result);
-        }
-
-        public void OnCurrentProfileComplete(ResultContainer resultContainer)
-        {
-            var result = new ProfileResult(resultContainer);
-            CallbackManager.OnFacebookResponse(result);
         }
 
         public void OnFriendFinderComplete(ResultContainer resultContainer)

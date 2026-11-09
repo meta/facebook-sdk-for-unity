@@ -63,7 +63,13 @@ public static class FacebookSdkEditorApiContract
     {
         Expect<IAppLinkResult>("FB.GetAppLink", callback => FB.GetAppLink(callback), result =>
             Require(result.Url == "mockurl://testing.url", "unexpected app-link URL"));
-        ExpectExpectedError<IProfileResult>("FB.CurrentProfile", callback => FB.CurrentProfile(callback));
+        ExpectNotSupported(
+            "FB.CurrentProfile",
+            () => FB.CurrentProfile(result =>
+            {
+                throw new InvalidOperationException(
+                    "FB.CurrentProfile unexpectedly invoked its callback");
+            }));
 
         ExpectCatalog("FB.GetCatalog", callback => FB.GetCatalog(callback));
         ExpectPurchases("FB.GetPurchases", callback => FB.GetPurchases(callback));
@@ -267,6 +273,27 @@ public static class FacebookSdkEditorApiContract
     private static void ExpectExpectedError<T>(string name, Action<FacebookDelegate<T>> invoke) where T : IResult
     {
         Expect(name, invoke, result => Require(!string.IsNullOrEmpty(result.Error), "expected an Editor mock error"), false);
+    }
+
+    private static void ExpectNotSupported(string name, Action invoke)
+    {
+        try
+        {
+            invoke();
+        }
+        catch (NotSupportedException)
+        {
+            assertions++;
+            return;
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidOperationException(
+                name + " threw " + exception.GetType().Name + " instead of NotSupportedException",
+                exception);
+        }
+
+        throw new InvalidOperationException(name + " did not throw NotSupportedException");
     }
 
     private static void Expect<T>(string name, Action<FacebookDelegate<T>> invoke, Action<T> validate = null, bool expectSuccess = true) where T : IResult
