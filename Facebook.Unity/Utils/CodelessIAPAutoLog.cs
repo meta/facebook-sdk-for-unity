@@ -188,13 +188,52 @@ namespace Facebook.Unity
             {
                 return null;
             }
-#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
-            return UnityEngine.Object.FindObjectsByType(type);
-#elif UNITY_2023_1_OR_NEWER
-            return UnityEngine.Object.FindObjectsByType(type, FindObjectsSortMode.None);
-#else
-            return UnityEngine.Object.FindObjectsOfType(type);
-#endif
+            var oneArgumentFind = typeof(UnityEngine.Object).GetMethod(
+                "FindObjectsByType",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                new[] { typeof(Type) },
+                null);
+            if (oneArgumentFind != null)
+            {
+                return oneArgumentFind.Invoke(null, new object[] { type }) as UnityEngine.Object[];
+            }
+
+            // Match the pre-Unity 7 API exactly. Unity exposes other overloads
+            // whose second parameter is an unrelated enum.
+            var sortModeType = typeof(UnityEngine.Object).Assembly.GetType(
+                "UnityEngine.FindObjectsSortMode",
+                false);
+            var twoArgumentFind = sortModeType == null
+                ? null
+                : typeof(UnityEngine.Object).GetMethod(
+                    "FindObjectsByType",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { typeof(Type), sortModeType },
+                    null);
+            if (twoArgumentFind != null && sortModeType.IsEnum &&
+                Enum.IsDefined(sortModeType, "None"))
+            {
+                var unsorted = Enum.Parse(sortModeType, "None");
+                return twoArgumentFind.Invoke(
+                    null,
+                    new object[] { type, unsorted }) as UnityEngine.Object[];
+            }
+
+            var legacyFind = typeof(UnityEngine.Object).GetMethod(
+                "FindObjectsOfType",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                new[] { typeof(Type) },
+                null);
+            if (legacyFind == null)
+            {
+                FacebookLogger.Warn("Unable to find a supported Unity object lookup API");
+                return null;
+            }
+
+            return legacyFind.Invoke(null, new object[] { type }) as UnityEngine.Object[];
         }
 
         private static object GetField(object inObj, string fieldName)

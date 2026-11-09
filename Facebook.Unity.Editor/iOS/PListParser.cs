@@ -74,11 +74,7 @@ namespace Facebook.Unity.Editor
         {
             this.filePath = fullPath;
             XmlReaderSettings settings = new XmlReaderSettings();
-#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
-            settings.DtdProcessing = DtdProcessing.Parse;
-#else
-            settings.ProhibitDtd = false;
-#endif
+            EnableDtdProcessing(settings);
             XmlReader plistReader = XmlReader.Create(this.filePath, settings);
 
             XDocument doc = XDocument.Load(plistReader);
@@ -86,6 +82,26 @@ namespace Facebook.Unity.Editor
             XElement dict = plist.Element("dict");
             this.XMLDict = new PListDict(dict);
             plistReader.Close();
+        }
+
+        private static void EnableDtdProcessing(XmlReaderSettings settings)
+        {
+            var dtdProcessing = typeof(XmlReaderSettings).GetProperty("DtdProcessing");
+            if (dtdProcessing != null)
+            {
+                var parse = Enum.Parse(dtdProcessing.PropertyType, "Parse");
+                dtdProcessing.SetValue(settings, parse, null);
+                return;
+            }
+
+            var prohibitDtd = typeof(XmlReaderSettings).GetProperty("ProhibitDtd");
+            if (prohibitDtd == null)
+            {
+                throw new MissingMemberException(
+                    "This runtime does not expose a supported XmlReaderSettings DTD control");
+            }
+
+            prohibitDtd.SetValue(settings, false, null);
         }
 
         public PListDict XMLDict { get; set; }

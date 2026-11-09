@@ -20,8 +20,10 @@
 
 namespace Facebook.Unity.Editor
 {
+    using System;
     using System.Globalization;
     using System.IO;
+    using System.Reflection;
     using UnityEditor;
     using UnityEngine;
 
@@ -95,19 +97,7 @@ namespace Facebook.Unity.Editor
                 fileList.AddRange(Directory.GetFiles(IAPiOSPath, "*.*", SearchOption.AllDirectories));
 
                 // No IncludeDependencies: the list is already recursive, and the walk adds uGUI.
-#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
-                UnityEditor.AssetPackage.Package.Export(
-                    new UnityEditor.AssetPackage.ExportPackageParameters(
-                        fileList.ToArray(),
-                        path,
-                        null,
-                        ExportPackageOptions.Recurse));
-#else
-                AssetDatabase.ExportPackage(
-                    fileList.ToArray(),
-                    path,
-                    ExportPackageOptions.Recurse);
-#endif
+                ExportPackageForCurrentUnity(fileList.ToArray(), path);
             }
             finally
             {
@@ -122,6 +112,73 @@ namespace Facebook.Unity.Editor
             Debug.Log("Finished exporting!");
 
             return path;
+        }
+
+        private static void ExportPackageForCurrentUnity(string[] assetPaths, string outputPath)
+        {
+            var editorAssembly = typeof(AssetDatabase).Assembly;
+            var parametersType = editorAssembly.GetType(
+                "UnityEditor.AssetPackage.ExportPackageParameters",
+                false);
+            var packageType = editorAssembly.GetType("UnityEditor.AssetPackage.Package", false);
+            if (parametersType != null && packageType != null)
+            {
+                var constructor = parametersType.GetConstructor(
+                    new[]
+                    {
+                        typeof(string[]),
+                        typeof(string),
+                        typeof(string),
+                        typeof(ExportPackageOptions),
+                    });
+                var export = packageType.GetMethod(
+                    "Export",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { parametersType },
+                    null);
+                if (constructor == null || export == null)
+                {
+                    throw new MissingMethodException(
+                        "Unity's AssetPackage export API is present but has an unsupported signature");
+                }
+
+                var parameters = constructor.Invoke(
+                    new object[]
+                    {
+                        assetPaths,
+                        outputPath,
+                        null,
+                        ExportPackageOptions.Recurse,
+                    });
+                export.Invoke(null, new[] { parameters });
+                return;
+            }
+
+            var legacyExport = typeof(AssetDatabase).GetMethod(
+                "ExportPackage",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                new[]
+                {
+                    typeof(string[]),
+                    typeof(string),
+                    typeof(ExportPackageOptions),
+                },
+                null);
+            if (legacyExport == null)
+            {
+                throw new MissingMethodException("Unity does not expose a supported package export API");
+            }
+
+            legacyExport.Invoke(
+                null,
+                new object[]
+                {
+                    assetPaths,
+                    outputPath,
+                    ExportPackageOptions.Recurse,
+                });
         }
     }
 }

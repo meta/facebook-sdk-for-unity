@@ -148,11 +148,7 @@ namespace Facebook.Unity.Editor
                     {
                         if (assembly.GetName().Name == "UnityEditor.Android.Extensions")
                         {
-#if UNITY_7000_0_0 || UNITY_7000_0_OR_NEWER
-                            var assemblyPath = assembly.GetLoadedAssemblyPath();
-#else
-                            var assemblyPath = assembly.Location;
-#endif
+                            var assemblyPath = GetLoadedAssemblyPath(assembly);
                             if (string.IsNullOrEmpty(assemblyPath))
                             {
                                 UnityEngine.Debug.LogWarning(
@@ -174,6 +170,58 @@ namespace Facebook.Unity.Editor
             }
 
             return sdkPath;
+        }
+
+        private static string GetLoadedAssemblyPath(Assembly assembly)
+        {
+            var assemblyExtension = typeof(UnityEngine.Object).Assembly.GetType(
+                "UnityEngine.AssemblyExtension",
+                false);
+            var getLoadedAssemblyPath = assemblyExtension == null
+                ? null
+                : assemblyExtension.GetMethod(
+                    "GetLoadedAssemblyPath",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { typeof(Assembly) },
+                    null);
+            if (getLoadedAssemblyPath != null)
+            {
+                try
+                {
+                    var loadedPath = getLoadedAssemblyPath.Invoke(null, new object[] { assembly }) as string;
+                    if (!string.IsNullOrEmpty(loadedPath))
+                    {
+                        return loadedPath;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        "Unable to read the Unity-managed assembly path: " + exception.Message);
+                }
+            }
+
+            var location = typeof(Assembly).GetProperty(
+                "Location",
+                BindingFlags.Public | BindingFlags.Instance);
+            if (location == null)
+            {
+                UnityEngine.Debug.LogWarning(
+                    "The runtime does not expose a loaded assembly location API");
+                return null;
+            }
+
+            try
+            {
+                return location.GetValue(assembly, null) as string;
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogWarning(
+                    "Unable to read the runtime assembly location: " + exception.Message);
+                return null;
+            }
         }
 
         private static IEnumerable<Assembly> GetLoadedAssemblies()
