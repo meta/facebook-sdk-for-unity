@@ -19,6 +19,7 @@
  */
 
 using System.IO;
+using System.Text.RegularExpressions;
 using Facebook.Unity.Editor;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -34,11 +35,25 @@ namespace Facebook.Unity.PostProcess
     /// </summary>
     public static class FBXcodePostProcess
     {
-        // Both project types name the app target this; only the .xcodeproj takes the project name.
-        private const string UnityAppTargetName = "Unity-iPhone";
+        // The Facebook iOS SDK is added as a Swift package rather than through CocoaPods.
+        private const string FacebookSDKPackageURL = "https://github.com/meta/facebook-ios-sdk";
 
+        // Up to the next major version: any 19.x release, the range the CocoaPods dependency allowed.
+        private const string FacebookSDKMinimumVersion = "19.0.0";
+
+        // The plugin imports FBSDKCoreKit, FBSDKLoginKit, FBSDKShareKit and FBSDKGamingServicesKit.
+        // FacebookCore brings in FacebookBasics and FacebookAEM.
+        private static readonly string[] FacebookSDKProducts =
+        {
+            "FacebookCore",
+            "FacebookLogin",
+            "FacebookShare",
+            "FacebookGamingServices",
+        };
+
+        // Runs after the External Dependency Manager writes the Podfile and before it installs it.
         [PostProcessBuildAttribute(45)]
-        public static void ConfigurePodfile(BuildTarget buildTarget, string pathToBuiltProject)
+        public static void WarnAboutFacebookPods(BuildTarget buildTarget, string pathToBuiltProject)
         {
 #if UNITY_IOS
             if (buildTarget != BuildTarget.iOS)
@@ -46,20 +61,13 @@ namespace Facebook.Unity.PostProcess
                 return;
             }
 
+            // Other plugins may still use pods. Only Facebook SDK pods would duplicate the package.
             string podfilePath = Path.Combine(pathToBuiltProject, "Podfile");
-            if (!File.Exists(podfilePath))
+            if (File.Exists(podfilePath) && Regex.IsMatch(File.ReadAllText(podfilePath), @"pod\s+['""]FBSDK"))
             {
-                Debug.LogWarning("No podfile created");
-                return;
-            }
-
-            string contents = File.ReadAllText(podfilePath);
-            string updated = PodfileEditor.AppendTargetIfMissing(contents, UnityAppTargetName);
-            updated = PodfileEditor.ForceDynamicFrameworkLinkage(updated);
-
-            if (updated != contents)
-            {
-                File.WriteAllText(podfilePath, updated);
+                Debug.LogWarning(
+                    "The Podfile at " + podfilePath + " adds Facebook SDK pods, but the Facebook SDK is " +
+                    "now added as a Swift package. Remove those pods, or the app links two copies of the SDK.");
             }
 #endif
         }
@@ -90,8 +98,11 @@ namespace Facebook.Unity.PostProcess
             project.ReadFromFile(projectPath);
 
             // The native plugin compiles into UnityFramework, so it needs configuring too.
-            ConfigureTarget(project, project.GetUnityMainTargetGuid());
-            ConfigureTarget(project, project.GetUnityFrameworkTargetGuid());
+            string mainTargetGuid = project.GetUnityMainTargetGuid();
+            string frameworkTargetGuid = project.GetUnityFrameworkTargetGuid();
+            ConfigureTarget(project, mainTargetGuid);
+            ConfigureTarget(project, frameworkTargetGuid);
+            AddFacebookSDKPackage(project, mainTargetGuid, frameworkTargetGuid);
 
             project.WriteToFile(projectPath);
 #endif
@@ -100,13 +111,36 @@ namespace Facebook.Unity.PostProcess
 #if UNITY_IOS
         private static void ConfigureTarget(PBXProject project, string targetGuid)
         {
-            project.AddBuildProperty(targetGuid, "GCC_PREPROCESSOR_DEFINITIONS", " $(inherited) FBSDKCOCOAPODS=1");
             project.AddFrameworkToProject(targetGuid, "Accelerate.framework", true);
 
             // Setting this unconditionally produced the invalid "5 5.0" (T110370082).
             if (string.IsNullOrEmpty(project.GetBuildPropertyForAnyConfig(targetGuid, "SWIFT_VERSION")))
             {
                 project.SetBuildProperty(targetGuid, "SWIFT_VERSION", "5.0");
+            }
+        }
+
+        private static void AddFacebookSDKPackage(PBXProject project, string mainTargetGuid, string frameworkTargetGuid)
+        {
+            // PBXProject adds a new reference on every call, and an Append build runs this again on
+            // the exported project.
+            if (project.WriteToString().Contains(FacebookSDKPackageURL))
+            {
+                return;
+            }
+
+            string packageGuid = project.AddRemotePackageReferenceAtVersionUpToNextMajor(
+                FacebookSDKPackageURL,
+                FacebookSDKMinimumVersion);
+
+            // UnityFramework compiles the plugin. Xcode only embeds the SDK's dynamic frameworks in
+            // the app when the app target uses the products too.
+            foreach (string targetGuid in new[] { frameworkTargetGuid, mainTargetGuid })
+            {
+                foreach (string product in FacebookSDKProducts)
+                {
+                    project.AddRemotePackageFrameworkToProject(targetGuid, product, packageGuid, false);
+                }
             }
         }
 

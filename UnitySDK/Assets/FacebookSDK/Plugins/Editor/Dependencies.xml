@@ -8,11 +8,4 @@
         <androidPackage spec="com.facebook.android:facebook-share:[19.0.0,20)" />
         <androidPackage spec="com.facebook.android:facebook-gamingservices:[19.0.0,20)" />
     </androidPackages>
-    <iosPods>
-        <iosPod name="FBSDKCoreKit_Basics" version="~> 19.0" />
-        <iosPod name="FBSDKCoreKit" version="~> 19.0" />
-        <iosPod name="FBSDKLoginKit" version="~> 19.0" />
-        <iosPod name="FBSDKShareKit" version="~> 19.0" />
-        <iosPod name="FBSDKGamingServicesKit" version="~> 19.0" />
-    </iosPods>
 </dependencies>

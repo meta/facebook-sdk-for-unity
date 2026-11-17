@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- iOS: the Facebook iOS SDK is now added to the exported Xcode project as a Swift
+  package (`https://github.com/meta/facebook-ios-sdk`, up to the next major version
+  from 19.0.0) instead of through CocoaPods, which is becoming read-only. Xcode
+  resolves the package on the first build. The FacebookCore, FacebookLogin,
+  FacebookShare and FacebookGamingServices products are linked to both
+  `UnityFramework` and `Unity-iPhone`. If you previously exported with CocoaPods,
+  remove any `FBSDK` pods from your Podfile, or the app links two copies of the SDK.
+  The post-process build step logs a warning when it finds them.
+
+### Removed
+- iOS: the plugin no longer edits the Podfile. Podfiles from other plugins are no
+  longer forced to `use_frameworks! :linkage => :dynamic` or given a `Unity-iPhone`
+  target.
+- iOS: the `FBSDKCOCOAPODS=1` preprocessor definition is no longer added.
+
 ## [19.0.0]
 
 ### Added
