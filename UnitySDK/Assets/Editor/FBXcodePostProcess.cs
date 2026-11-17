@@ -18,10 +18,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Facebook.Unity.Editor;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEngine;
 #if UNITY_IOS
@@ -50,6 +54,50 @@ namespace Facebook.Unity.PostProcess
             "FacebookShare",
             "FacebookGamingServices",
         };
+
+        // When no plugin declares pods, the External Dependency Manager still writes an empty Podfile
+        // and runs pod install by default, leaving Pods/ and a workspace the project doesn't need.
+        // Projects with pods from other plugins are unaffected. Reflection, because the plugin
+        // doesn't reference the resolver's assemblies and they may be absent or an older version.
+        internal static void DisableEmptyPodfileGeneration()
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type resolver = assembly.GetType("Google.IOSResolver");
+                if (resolver == null)
+                {
+                    continue;
+                }
+
+                PropertyInfo setting = resolver.GetProperty(
+                    "AllowEmptyPodfileGeneration",
+                    BindingFlags.Public | BindingFlags.Static);
+                if (setting == null || !setting.CanWrite || setting.PropertyType != typeof(bool))
+                {
+                    return;
+                }
+
+                try
+                {
+                    if ((bool)setting.GetValue(null, null))
+                    {
+                        setting.SetValue(null, false, null);
+                        Debug.Log(
+                            "Facebook SDK: turned off the External Dependency Manager's " +
+                            "\"Allow empty Podfile generation\" setting. The Facebook SDK is added as a " +
+                            "Swift package, so an iOS build with no pods from any plugin needs no Podfile.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning(
+                        "Facebook SDK: could not turn off empty Podfile generation in the External " +
+                        "Dependency Manager. The export may contain an unneeded empty Podfile. " + e.Message);
+                }
+
+                return;
+            }
+        }
 
         // Runs after the External Dependency Manager writes the Podfile and before it installs it.
         [PostProcessBuildAttribute(45)]
@@ -169,5 +217,24 @@ namespace Facebook.Unity.PostProcess
             return File.Exists(underProjectDirectory) ? underProjectDirectory : null;
         }
 #endif
+    }
+
+    /// <summary>
+    /// Applies External Dependency Manager settings before an iOS build, ahead of its Podfile step.
+    /// </summary>
+    public class FBPodfilePreprocess : IPreprocessBuildWithReport
+    {
+        public int callbackOrder
+        {
+            get { return 0; }
+        }
+
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            if (report.summary.platform == BuildTarget.iOS)
+            {
+                FBXcodePostProcess.DisableEmptyPodfileGeneration();
+            }
+        }
     }
 }

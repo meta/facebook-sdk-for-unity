@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `UnityFramework` and `Unity-iPhone`. If you previously exported with CocoaPods,
   remove any `FBSDK` pods from your Podfile, or the app links two copies of the SDK.
   The post-process build step logs a warning when it finds them.
+- iOS: before an iOS build, the plugin turns off the External Dependency Manager's
+  "Allow empty Podfile generation" setting (`Google.IOSResolver.AllowEmptyPodfileGeneration`).
+  When no plugin declares pods, the export no longer contains a `Podfile`, `Pods/` or
+  `.xcworkspace`; open `Unity-iPhone.xcodeproj` directly. Projects with pods from other
+  plugins still get a Podfile and workspace as before.
 
 ### Removed
 - iOS: the plugin no longer edits the Podfile. Podfiles from other plugins are no
