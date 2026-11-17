@@ -100,7 +100,6 @@
     <Compile Include="Editor\UserAgent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VersionNumberCheck.cs" />
-    <Compile Include="BuildPostProcess\PodfileEditorTest.cs" />
   </ItemGroup>
   <Import Project="$(SolutionDir)UnityReferences.xml">
   </Import>

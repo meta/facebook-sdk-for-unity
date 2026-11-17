@@ -62,7 +62,6 @@
     <Compile Include="Utility.cs" />
     <Compile Include="android\FacebookAndroidUtil.cs" />
     <Compile Include="android\ManifestMod.cs" />
-    <Compile Include="iOS\PodfileEditor.cs" />
     <Compile Include="iOS\PListDict.cs" />
     <Compile Include="iOS\PListParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
