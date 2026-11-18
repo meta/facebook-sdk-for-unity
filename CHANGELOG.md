@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Improved Unity 7/CoreCLR compatibility for SDK sources and precompiled assemblies.
+- Fixed Play Mode reinitialization with Domain Reload disabled and codeless snapshot
+  error recovery.
+- Corrected Editor/app-store callbacks, purchase/subscription parsing, and `travelId`
+  media uploads.
 - iOS: the Facebook iOS SDK is now added to the exported Xcode project as a Swift
   package (`https://github.com/meta/facebook-ios-sdk`, up to the next major version
   from 19.0.0) instead of through CocoaPods, which is becoming read-only. Xcode
