@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.0.1]
+
 ### Changed
 - Improved Unity 7/CoreCLR compatibility for SDK sources and precompiled assemblies.
 - Fixed Play Mode reinitialization with Domain Reload disabled and codeless snapshot
@@ -471,7 +473,8 @@ The release has been deprecated due to Unity support issues caused by removing â
 - Facebook Developer Docs: [Changelog v7.x](https://developers.facebook.com/docs/unity/change-log)
 
 <!-- Links -->
-[19.0.0]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-18.1.1...HEAD
+[19.0.1]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-19.0.0...HEAD
+[19.0.0]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-18.1.1...sdk-version-19.0.0
 [18.1.1]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-18.1.0...sdk-version-18.1.1
 [18.1.0]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-18.0.0...sdk-version-18.1.0
 [18.0.2]: https://github.com/facebook/facebook-sdk-for-unity/compare/sdk-version-18.0.0...sdk-version-18.0.2
