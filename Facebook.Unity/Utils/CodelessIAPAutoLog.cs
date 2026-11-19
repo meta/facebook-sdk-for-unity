@@ -74,7 +74,7 @@ namespace Facebook.Unity
             }
         }
 
-        internal static void addListenerToGameObject(UnityEngine.Object gameObject, object listenerObject)
+        internal static void addListenerToGameObject(object gameObject, object listenerObject)
         {
             // Code stripping will work here when developer uses Unity IAP service the UnityEngine.Purchasing will be linked
             // If it's not enabled, this will return null and it's expected and handled in null check
@@ -90,7 +90,12 @@ namespace Facebook.Unity
             Type unityEventProduct = eventGeneric.MakeGenericType(typeArgs);
             Type unityActionProduct = actionGeneric.MakeGenericType(typeArgs);
 
-            UnityEventBase onPurchaseComplete = (UnityEventBase)GetField(gameObject, "onPurchaseComplete");
+            // Not every Unity IAP version (e.g. IAP 5) has onPurchaseComplete as a UnityEvent<Product>.
+            object onPurchaseComplete = GetField(gameObject, "onPurchaseComplete");
+            if (onPurchaseComplete == null || !unityEventProduct.IsInstanceOfType(onPurchaseComplete))
+            {
+                return;
+            }
             MethodInfo addListener = unityEventProduct.GetMethod("AddListener");
             MethodInfo removeListener = unityEventProduct.GetMethod("RemoveListener");
 
@@ -98,6 +103,10 @@ namespace Facebook.Unity
                 "onPurchaseCompleteHandler",
                 BindingFlags.Instance | BindingFlags.Public
             );
+            if (addListener == null || removeListener == null || method == null)
+            {
+                return;
+            }
 
             removeListener.Invoke(onPurchaseComplete, new object[] {
                 System.Delegate.CreateDelegate(unityActionProduct, listenerObject, method)
