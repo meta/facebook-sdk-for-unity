@@ -39,6 +39,8 @@ namespace Facebook.Unity.Editor
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (mode != LoadSceneMode.Single)
+                return;
             CodelessIAPAutoLog.addListenerToIAPButtons(this);
         }
 
