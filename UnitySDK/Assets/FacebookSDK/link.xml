@@ -8,4 +8,7 @@
   <assembly fullname="Facebook.Unity.Canvas" ignoreIfMissing="1">
     <type fullname="Facebook.Unity.Canvas.*" preserve="all"/>
   </assembly>
+  <assembly fullname="Facebook.Unity.Windows" ignoreIfMissing="1">
+    <type fullname="Facebook.Unity.Windows.*" preserve="all"/>
+  </assembly>
 </linker>
