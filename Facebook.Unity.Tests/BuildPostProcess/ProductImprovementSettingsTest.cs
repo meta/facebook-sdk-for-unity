@@ -100,6 +100,30 @@ namespace Facebook.Unity.Tests.BuildPostProcess
                 ((XmlElement)entries[0]).GetAttribute("value", "http://schemas.android.com/apk/res/android"));
         }
 
+        [Test]
+        public void AppLinkIntentFiltersAreBrowsable()
+        {
+            SetField(
+                (FacebookSettings)this.instanceField.GetValue(null),
+                "appLinkSchemes",
+                new List<FacebookSettings.UrlSchemes> { new FacebookSettings.UrlSchemes(new List<string> { "fb123", "myapp" }) });
+            File.WriteAllText(this.temporaryFile,
+                "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"><application/></manifest>");
+            ManifestMod.UpdateManifest(this.temporaryFile);
+            var document = new XmlDocument();
+            document.Load(this.temporaryFile);
+            var namespaces = new XmlNamespaceManager(document.NameTable);
+            namespaces.AddNamespace("android", "http://schemas.android.com/apk/res/android");
+            var filters = document.SelectNodes(
+                "/manifest/application/activity[@android:name='" + ManifestMod.AppLinkActivityName + "']/intent-filter", namespaces);
+            Assert.AreEqual(2, filters.Count);
+            foreach (XmlNode filter in filters)
+            {
+                Assert.AreEqual(1, filter.SelectNodes("category[@android:name='android.intent.category.DEFAULT']", namespaces).Count);
+                Assert.AreEqual(1, filter.SelectNodes("category[@android:name='android.intent.category.BROWSABLE']", namespaces).Count);
+            }
+        }
+
         [TestCase(true)]
         [TestCase(false)]
         public void ExportsAndReplacesIOSSetting(bool enabled)

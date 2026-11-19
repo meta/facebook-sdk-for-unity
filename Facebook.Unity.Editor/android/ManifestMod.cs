@@ -543,6 +543,10 @@ namespace Facebook.Unity.Editor
                 category.SetAttribute("name", ns, "android.intent.category.DEFAULT");
                 intentFilter.AppendChild(category);
 
+                var browsableCategory = doc.CreateElement("category");
+                browsableCategory.SetAttribute("name", ns, "android.intent.category.BROWSABLE");
+                intentFilter.AppendChild(browsableCategory);
+
                 XmlElement dataElement = doc.CreateElement("data");
                 dataElement.SetAttribute("scheme", ns, scheme);
                 intentFilter.AppendChild(dataElement);
