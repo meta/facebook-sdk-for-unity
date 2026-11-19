@@ -37,6 +37,7 @@
     <Compile Include="CodelessIAPAutoLogTests.cs" />
     <Compile Include="FacebookTestClass.cs" />
     <Compile Include="ProductImprovement.cs" />
+    <Compile Include="BuildPostProcess\PlayModeBuildTargetTest.cs" />
     <Compile Include="BuildPostProcess\ProductImprovementSettingsTest.cs" />
     <Compile Include="Canvas\UserAgent.cs" />
     <Compile Include="Canvas\Pay.cs" />
